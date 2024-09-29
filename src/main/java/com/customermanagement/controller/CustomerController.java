@@ -4,6 +4,7 @@ import com.customermanagement.model.Customer;
 import com.customermanagement.service.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -18,6 +19,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
+@Slf4j
 public class CustomerController {
 
     private final CustomerService customerService;
@@ -25,17 +27,19 @@ public class CustomerController {
     @PostMapping
     @Operation(summary = "Create a new customer")
     public ResponseEntity<Customer> createCustomer(@Valid @RequestBody Customer customerInput) {
+        log.info("Received customer input: {}", customerInput);
+        System.out.println("Received customer input: " + customerInput);
         return new ResponseEntity<>(customerService.createCustomer(customerInput), HttpStatus.CREATED);
     }
 
     @GetMapping
-    @Operation(summary = "Get customers based on optional filters")
+    @Operation(summary = "Get customers based on dynamic filters")
     public ResponseEntity<List<Customer>> getCustomers(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String city,
-            @RequestParam(required = false) String state) {
-        return ResponseEntity.ok(customerService.getCustomers(name, city, state));
+            @RequestParam Map<String, String> params,
+            @RequestParam(defaultValue = "AND") String operation) {
+        return ResponseEntity.ok(customerService.getCustomers(params, operation));
     }
+
 
     @PostMapping("/only-in-a")
     @Operation(summary = "Get customers only in list A")

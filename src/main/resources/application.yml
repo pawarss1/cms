@@ -2,8 +2,20 @@ spring:
   data:
     mongodb:
       uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/customerdb}
+  mvc:
+    throw-exception-if-no-handler-found: true
+    web:
+      resources:
+        add-mappings: false
   kafka:
-    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    producer:
+      properties:
+        max.block.ms: 5000
+logging:
+  level:
+    root: INFO
+    com.customermanagement: DEBUG
 
 server:
   port: 8080
@@ -13,3 +25,17 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+info:
+  app:
+    name: Customer Management System
+    description: A system to manage customer data
+    version: 1.0.0

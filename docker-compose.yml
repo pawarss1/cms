@@ -9,7 +9,9 @@ services:
       - kafka
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/customerdb
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    networks:
+      - app-network
 
   mongodb:
     image: mongo:latest
@@ -17,12 +19,18 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+      - type: tmpfs
+        target: /tmp
+    networks:
+      - app-network
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - app-network
 
   kafka:
     image: confluentinc/cp-kafka:latest
@@ -37,6 +45,11 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - app-network
 
 volumes:
   mongodb_data:
+networks:
+  app-network:
+    driver: bridge
