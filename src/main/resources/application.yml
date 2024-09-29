@@ -8,10 +8,11 @@ spring:
       resources:
         add-mappings: false
   kafka:
-    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       properties:
         max.block.ms: 5000
+        customer.creation.topic: customer-created
 logging:
   level:
     root: INFO

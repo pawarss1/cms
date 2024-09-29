@@ -1,7 +1,7 @@
 package com.customermanagement.controller;
 
 import com.customermanagement.model.Customer;
-import com.customermanagement.service.CustomerService;
+import com.customermanagement.service.impl.CustomerServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ import java.util.Map;
 @Slf4j
 public class CustomerController {
 
-    private final CustomerService customerService;
+    private final CustomerServiceImpl customerService;
 
     @PostMapping
     @Operation(summary = "Create a new customer")

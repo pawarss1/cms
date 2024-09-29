@@ -1,10 +1,14 @@
-package com.customermanagement.service;
+package com.customermanagement.service.impl;
 
 import com.customermanagement.exceptions.KafkaPublishException;
+import com.customermanagement.infra.broker.BrokerFactory;
+import com.customermanagement.infra.broker.BrokerStrategy;
 import com.customermanagement.model.Customer;
 import com.customermanagement.repository.CustomerRepository;
+import com.customermanagement.service.CustomerServiceStrategy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -15,8 +19,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.ListenableFutureCallback;
+
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -26,12 +29,14 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CustomerService {
+public class CustomerServiceImpl implements CustomerServiceStrategy {
 
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final BrokerFactory brokerFactory;
     private final MongoTemplate mongoTemplate;
     private final CustomerRepository customerRepository;
 
+    @Value("${spring.kafka.producer.properties.customer.creation.topic}")
+    private String customerCreationTopic;
 
 
     @Transactional
@@ -49,39 +54,21 @@ public class CustomerService {
         Customer savedCustomer = customerRepository.save(customer);
         System.out.println("Received customer input: " + customerInput);
         log.info("User Created: {}", savedCustomer.getCustomerId());
-        Message<String> message = MessageBuilder
-                .withPayload(savedCustomer.getCustomerId())
-                .setHeader(KafkaHeaders.TOPIC, "customer-created")
-                .build();
-
-        try {
-            SendResult<String, String> sendResult = kafkaTemplate.send(message).get(5000, TimeUnit.MILLISECONDS);
-            log.info("Message sent successfully to Kafka topic: {}", sendResult.getRecordMetadata().topic());
-        } catch (Exception e) {
-            log.error("Failed to send message to Kafka", e);
-            throw new KafkaPublishException("Failed to send message to Kafka", e);
-        }
-//        ListenableFuture<SendResult<String, String>> future =
-//                kafkaTemplate.send("customer-created", savedCustomer.getCustomerId());
-
-//        future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
-//            @Override
-//            public void onSuccess(SendResult<String, String> result) {
-//                log.info("Message sent successfully to Kafka topic: {}", result.getRecordMetadata().topic());
-//            }
+        BrokerStrategy broker = brokerFactory.getBroker();
+        broker.produce(customerCreationTopic, savedCustomer.toString());
+//        Message<String> message = MessageBuilder
+//                .withPayload(savedCustomer.getCustomerId())
+//                .setHeader(KafkaHeaders.TOPIC, "customer-created")
+//                .build();
 //
-//            @Override
-//            public void onFailure(Throwable ex) {
-//                log.error("Failed to send message to Kafka", ex);
-//                throw new RuntimeException("Failed to send message to Kafka", ex);
-//            }
-//        });
-
+//        try {
+//            SendResult<String, String> sendResult = kafkaTemplate.send(message).get(5000, TimeUnit.MILLISECONDS);
+//            log.info("Message sent successfully to Kafka topic: {}", sendResult.getRecordMetadata().topic());
+//        } catch (Exception e) {
+//            log.error("Failed to send message to Kafka", e);
+//            throw new KafkaPublishException("Failed to send message to Kafka", e);
+//        }
         return savedCustomer;
-    }
-
-    private void publishToKafkaAndWait(String customerId) {
-
     }
 
 
