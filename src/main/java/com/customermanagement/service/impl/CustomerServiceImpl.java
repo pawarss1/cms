@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import javax.validation.Valid;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class CustomerServiceImpl implements CustomerServiceStrategy {
-
+    // Error handling for all service module is taken by Global Exception Handler, using ControllerAdvise
     private final BrokerFactory brokerFactory;
     private final CustomerRepository customerRepository;
 
@@ -52,14 +53,19 @@ public class CustomerServiceImpl implements CustomerServiceStrategy {
 
         Customer savedCustomer = customerRepository.save(customer);
         log.info("Customer saved to MongoDB with ID: {}", savedCustomer.getCustomerId());
-        ;
+        produceToBrokerAsync(savedCustomer);
+        log.info("PUBLISHING_TO_BROKER_IN_PROGRESS");
+        return savedCustomer;
+    }
+
+    @Async
+    private void produceToBrokerAsync(Customer customer) {
         // Assumption is that if producing to kafka is failing, we wont rollback the MongoDB Insertion,
         // coz it is not End User's/ Client's headache if there is issue from our infra's end
         // Ideal way is to have some mechanism to have a retry of New User Detail production onto kafka, for the failed ones
         // But in case of failure the Creation in Database shouldn't rollback.
         BrokerStrategy broker = brokerFactory.getBroker();
-        broker.produce(customerCreationBrokerTopic, savedCustomer.toString());
-        return savedCustomer;
+        broker.produce(customerCreationBrokerTopic, customer.toString());
     }
 
     /**

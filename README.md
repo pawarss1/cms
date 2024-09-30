@@ -35,34 +35,22 @@ customer-management-system/
 
 ## Building the Application
 
-To build the application, run:
-
-```
-./gradlew build
-```
-
-## Running the Application
-
-### Using Gradle
-
-To run the application using Gradle:
-
-```
-./gradlew bootRun
-```
+HLD for the application
+![img_1.png](img_1.png)
 
 ### Using Docker Compose
 
 To run the entire stack (application, MongoDB, and Kafka) using Docker Compose:
 
 ```
-docker-compose up --build
+docker compose build
+docker compose up -d
 ```
 
 To stop the services:
 
 ```
-docker-compose down
+docker compose down
 ```
 
 ## API Documentation
@@ -77,7 +65,7 @@ This provides an interactive interface to explore and test the API endpoints.
 
 ## Main Features
 
-1. Create new customers
+1. Create new customers and publish the Customer Data to Kafka to let other services in ecosystem know about it.
 2. Retrieve customers based on name, city, or state
 3. Compare customer lists (only in A, only in B, in both A and B)
 
@@ -96,3 +84,4 @@ This provides an interactive interface to explore and test the API endpoints.
 - The application is containerized using Docker, making it easy to deploy and run in various environments.
 
 For any issues or questions, please open an issue in the project repository.
+
