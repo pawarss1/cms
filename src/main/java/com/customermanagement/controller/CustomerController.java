@@ -2,6 +2,7 @@ package com.customermanagement.controller;
 
 import com.customermanagement.model.Customer;
 import com.customermanagement.service.impl.CustomerServiceImpl;
+import com.customermanagement.validation.ListOfTwoLists;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
@@ -21,6 +23,7 @@ import java.util.Map;
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class CustomerController {
 
     private final CustomerServiceImpl customerService;
@@ -105,7 +108,7 @@ public class CustomerController {
                     )
             )
     )
-    public ResponseEntity<List<Customer>> getCustomersOnlyInA(@Valid @RequestBody List<List<String>> lists) {
+    public ResponseEntity<List<Customer>> getCustomersOnlyInA(@Valid @ListOfTwoLists @RequestBody List<List<String>> lists) {
         log.info("Received request to get customers only in list A: listA size={}, listB size={}", lists.get(0).size(), lists.get(1).size());
         List<Customer> customers = customerService.getCustomersOnlyInA(lists.get(0), lists.get(1));
         log.info("Retrieved {} customers only in list A", customers.size());
@@ -126,7 +129,7 @@ public class CustomerController {
                     )
             )
     )
-    public ResponseEntity<List<Customer>> getCustomersOnlyInB(@Valid @RequestBody List<List<String>> lists) {
+    public ResponseEntity<List<Customer>> getCustomersOnlyInB(@Valid @ListOfTwoLists @RequestBody List<List<String>> lists) {
         log.info("Received request to get customers only in list B: listA size={}, listB size={}", lists.get(0).size(), lists.get(1).size());
         List<Customer> customers = customerService.getCustomersOnlyInB(lists.get(0), lists.get(1));
         log.info("Retrieved {} customers only in list B", customers.size());
@@ -147,7 +150,7 @@ public class CustomerController {
                     )
             )
     )
-    public ResponseEntity<List<Customer>> getCustomersInBoth(@Valid @RequestBody List<List<String>> lists) {
+    public ResponseEntity<List<Customer>> getCustomersInBoth(@Valid  @ListOfTwoLists @RequestBody List<List<String>> lists) {
         log.info("Received request to get customers in both lists: listA size={}, listB size={}", lists.get(0).size(), lists.get(1).size());
         List<Customer> customers = customerService.getCustomersInBoth(lists.get(0), lists.get(1));
         log.info("Retrieved {} customers in both lists", customers.size());
