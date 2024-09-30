@@ -23,6 +23,7 @@ import java.util.UUID;
 @Slf4j
 public class CustomerServiceImpl implements CustomerServiceStrategy {
     // Error handling for all service module is taken by Global Exception Handler, using ControllerAdvise
+    // These final dependencies will be injected by spring boot as we are using @RequiredArgsConstructor
     private final BrokerFactory brokerFactory;
     private final CustomerRepository customerRepository;
 
