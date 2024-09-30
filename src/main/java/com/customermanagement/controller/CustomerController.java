@@ -44,12 +44,14 @@ public class CustomerController {
     @PostMapping("/only-in-a")
     @Operation(summary = "Get customers only in list A")
     public ResponseEntity<List<Customer>> getCustomersOnlyInA(@RequestBody List<List<String>> lists) {
+        log.info("only a {}", lists.get(0));
         return ResponseEntity.ok(customerService.getCustomersOnlyInA(lists.get(0), lists.get(1)));
     }
 
     @PostMapping("/only-in-b")
     @Operation(summary = "Get customers only in list B")
     public ResponseEntity<List<Customer>> getCustomersOnlyInB(@RequestBody List<List<String>> lists) {
+        log.info("only b {}", lists.get(0));
         return ResponseEntity.ok(customerService.getCustomersOnlyInB(lists.get(0), lists.get(1)));
     }
 
