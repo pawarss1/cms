@@ -42,9 +42,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
-        log.info("GLOBAL_ERROR_HANDLER_METHOD_ARGS_MISMATCH  {}", ex.getMessage()," {} ", ex.getStackTrace());
         log.error("GLOBAL_ERROR_HANDLER_METHOD_ARGS_MISMATCH  {}", ex.getMessage()," {} ", ex.getStackTrace());
-        System.out.println("IMAINI");
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();

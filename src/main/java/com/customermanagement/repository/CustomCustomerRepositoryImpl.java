@@ -2,6 +2,7 @@ package com.customermanagement.repository;
 
 import com.customermanagement.model.Customer;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -13,6 +14,9 @@ import java.util.stream.Collectors;
 public class CustomCustomerRepositoryImpl implements CustomCustomerRepository {
 
     private final MongoTemplate mongoTemplate;
+
+    @Value("${customer.query.default-page-size:20}")
+    private int defaultPageSize;
 
     private final Map<String, Function<String, Criteria>> queryFunctions = Map.of(
             "name", this::getNameCriteria,
@@ -47,7 +51,7 @@ public class CustomCustomerRepositoryImpl implements CustomCustomerRepository {
             }
             query.addCriteria(combinedCriteria);
         }
-
+        query.limit(defaultPageSize);
         return mongoTemplate.find(query, Customer.class);
     }
 
@@ -71,6 +75,7 @@ public class CustomCustomerRepositoryImpl implements CustomCustomerRepository {
         onlyInList.removeAll(excludeList);
 
         Query query = new Query(Criteria.where("customerId").in(onlyInList));
+        query.limit(defaultPageSize);
         List<Customer> result = mongoTemplate.find(query, Customer.class);
 
         log.info("Found {} customers only in {}", result.size(), listName);
@@ -90,6 +95,7 @@ public class CustomCustomerRepositoryImpl implements CustomCustomerRepository {
                 Criteria.where("customerId").in(listA),
                 Criteria.where("customerId").in(listB)
         ));
+        query.limit(defaultPageSize);
         return mongoTemplate.find(query, Customer.class);
     }
 

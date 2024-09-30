@@ -40,3 +40,8 @@ info:
     name: Customer Management System
     description: A system to manage customer data
     version: 1.0.0
+
+customer:
+  query:
+    default-page-size: 25
+    default-page-start: 0
