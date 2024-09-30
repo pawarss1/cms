@@ -26,9 +26,6 @@ public class Customer {
     @NotBlank(message = "Last name is mandatory")
     private String lastName;
 
-    @NotBlank(message = "Customer number is mandatory")
-    private String customerNumber;
-
     @Min(value = 18, message = "Age must be at least 18")
     @Max(value = 150, message = "Age must be less than 150")
     private Integer age;

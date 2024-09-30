@@ -3,16 +3,17 @@ package com.customermanagement.controller;
 import com.customermanagement.model.Customer;
 import com.customermanagement.service.impl.CustomerServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.Valid;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,50 +27,130 @@ public class CustomerController {
 
     @PostMapping
     @Operation(summary = "Create a new customer")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Customer.class),
+                    examples = @ExampleObject(
+                            value = "{\n" +
+                                    "  \"firstName\": \"John\",\n" +
+                                    "  \"lastName\": \"Doe\",\n" +
+                                    "  \"age\": 30,\n" +
+                                    "  \"spendingLimit\": 5000.00,\n" +
+                                    "  \"mobileNumber\": \"+1234567890\",\n" +
+                                    "  \"addresses\": [\n" +
+                                    "    {\n" +
+                                    "      \"type\": \"Home\",\n" +
+                                    "      \"street\": \"123 Main St\",\n" +
+                                    "      \"city\": \"Anytown\",\n" +
+                                    "      \"state\": \"CA\",\n" +
+                                    "      \"zipCode\": \"12345\"\n" +
+                                    "    }\n" +
+                                    "  ]\n" +
+                                    "}"
+                    )
+            )
+    )
     public ResponseEntity<Customer> createCustomer(@Valid @RequestBody Customer customerInput) {
-        log.info("Received customer input: {}", customerInput);
-        System.out.println("Received customer input: " + customerInput);
-        return new ResponseEntity<>(customerService.createCustomer(customerInput), HttpStatus.CREATED);
+        log.info("Received request to create customer: firstName={}, lastName={}", customerInput.getFirstName(), customerInput.getLastName());
+        Customer createdCustomer = customerService.createCustomer(customerInput);
+        log.info("Customer created successfully: id={}", createdCustomer.getCustomerId());
+        return new ResponseEntity<>(createdCustomer, HttpStatus.CREATED);
     }
 
     @GetMapping
-    @Operation(summary = "Get customers based on dynamic filters")
+    @Operation(
+            summary = "Get customers based on dynamic filters",
+            parameters = {
+                    @Parameter(
+                            name = "name",
+                            description = "Customer name",
+                            in = ParameterIn.QUERY,
+                            example = "test"
+                    ),
+                    @Parameter(
+                            name = "city",
+                            description = "City of the customer",
+                            in = ParameterIn.QUERY,
+                            example = "bng"
+                    ),
+                    @Parameter(
+                            name = "state",
+                            description = "State of the customer",
+                            in = ParameterIn.QUERY,
+                            example = "la"
+                    )
+            }
+    )
     public ResponseEntity<List<Customer>> getCustomers(
             @RequestParam Map<String, String> params,
             @RequestParam(defaultValue = "AND") String operation) {
-        return ResponseEntity.ok(customerService.getCustomers(params, operation));
+        log.info("Received request to get customers with filters: params={}, operation={}", params, operation);
+        List<Customer> customers = customerService.getCustomers(params, operation);
+        log.info("Retrieved {} customers matching the criteria", customers.size());
+        return ResponseEntity.ok(customers);
     }
-
 
     @PostMapping("/only-in-a")
     @Operation(summary = "Get customers only in list A")
-    public ResponseEntity<List<Customer>> getCustomersOnlyInA(@RequestBody List<List<String>> lists) {
-        log.info("only a {}", lists.get(0));
-        return ResponseEntity.ok(customerService.getCustomersOnlyInA(lists.get(0), lists.get(1)));
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = List.class),
+                    examples = @ExampleObject(
+                            value = "[\n" +
+                                    "  [\"d6f8202d-5dd0-4887-a5ce-da30325689f5\"],\n" +
+                                    "  [\"84365e2c-41fe-40b0-b26a-e85cd48ecf99\", \"de326f2e-b2fa-42a9-a9fe-300a62516bb6\", \"d6f8202d-5dd0-4887-a5ce-da30325689f5\"]\n" +
+                                    "]"
+                    )
+            )
+    )
+    public ResponseEntity<List<Customer>> getCustomersOnlyInA(@Valid @RequestBody List<List<String>> lists) {
+        log.info("Received request to get customers only in list A: listA size={}, listB size={}", lists.get(0).size(), lists.get(1).size());
+        List<Customer> customers = customerService.getCustomersOnlyInA(lists.get(0), lists.get(1));
+        log.info("Retrieved {} customers only in list A", customers.size());
+        return ResponseEntity.ok(customers);
     }
 
     @PostMapping("/only-in-b")
     @Operation(summary = "Get customers only in list B")
-    public ResponseEntity<List<Customer>> getCustomersOnlyInB(@RequestBody List<List<String>> lists) {
-        log.info("only b {}", lists.get(0));
-        return ResponseEntity.ok(customerService.getCustomersOnlyInB(lists.get(0), lists.get(1)));
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = List.class),
+                    examples = @ExampleObject(
+                            value = "[\n" +
+                                    "  [\"d6f8202d-5dd0-4887-a5ce-da30325689f5\"],\n" +
+                                    "  [\"84365e2c-41fe-40b0-b26a-e85cd48ecf99\", \"de326f2e-b2fa-42a9-a9fe-300a62516bb6\", \"d6f8202d-5dd0-4887-a5ce-da30325689f5\"]\n" +
+                                    "]"
+                    )
+            )
+    )
+    public ResponseEntity<List<Customer>> getCustomersOnlyInB(@Valid @RequestBody List<List<String>> lists) {
+        log.info("Received request to get customers only in list B: listA size={}, listB size={}", lists.get(0).size(), lists.get(1).size());
+        List<Customer> customers = customerService.getCustomersOnlyInB(lists.get(0), lists.get(1));
+        log.info("Retrieved {} customers only in list B", customers.size());
+        return ResponseEntity.ok(customers);
     }
 
     @PostMapping("/in-both")
     @Operation(summary = "Get customers in both lists")
-    public ResponseEntity<List<Customer>> getCustomersInBoth(@RequestBody List<List<String>> lists) {
-        return ResponseEntity.ok(customerService.getCustomersInBoth(lists.get(0), lists.get(1)));
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return errors;
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = List.class),
+                    examples = @ExampleObject(
+                            value = "[\n" +
+                                    "  [\"d6f8202d-5dd0-4887-a5ce-da30325689f5\"],\n" +
+                                    "  [\"84365e2c-41fe-40b0-b26a-e85cd48ecf99\", \"de326f2e-b2fa-42a9-a9fe-300a62516bb6\", \"d6f8202d-5dd0-4887-a5ce-da30325689f5\"]\n" +
+                                    "]"
+                    )
+            )
+    )
+    public ResponseEntity<List<Customer>> getCustomersInBoth(@Valid @RequestBody List<List<String>> lists) {
+        log.info("Received request to get customers in both lists: listA size={}, listB size={}", lists.get(0).size(), lists.get(1).size());
+        List<Customer> customers = customerService.getCustomersInBoth(lists.get(0), lists.get(1));
+        log.info("Retrieved {} customers in both lists", customers.size());
+        return ResponseEntity.ok(customers);
     }
 }

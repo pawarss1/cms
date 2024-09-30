@@ -1,15 +1,17 @@
 package com.customermanagement.model;
 
+import com.customermanagement.enums.AddressType;
 import lombok.Builder;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Data
 @Builder
 public class Address {
-    @NotBlank(message = "Address type is mandatory")
-    private String type;
+    @NotNull(message = "Address type is mandatory")
+    private AddressType type;
 
     @NotBlank(message = "Street is mandatory")
     private String street;
